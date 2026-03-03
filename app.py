@@ -49,6 +49,28 @@ def signup():
     db.session.commit()
     return jsonify({"message": "Success"})
 
+@app.route("/api/register", methods=["POST"])
+def register():
+    data = request.json
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"message": "Missing fields"}), 400
+
+    existing = User.query.filter_by(email=email).first()
+    if existing:
+        return jsonify({"message": "User already exists"}), 400
+
+    new_user = User(email=email, password=password, ledger_data="[]")
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({
+        "email": email,
+        "ledger_data": []
+    }), 200
+
 # --- REAL-TIME SYNC ROUTES ---
 
 @app.route('/api/delete', methods=['POST'])
